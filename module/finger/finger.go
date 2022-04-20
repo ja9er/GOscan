@@ -87,7 +87,6 @@ func toUtf8(content string, contentType string) string {
 		//实际上，这里获取的编码未必是正确的，在下面还要做比对
 		htmlEncode = "utf-8"
 	}
-
 	reg := regexp.MustCompile(`(?is)<meta[^>]*charset\s*=["']?\s*([A-Za-z0-9\-]+)`)
 	match := reg.FindStringSubmatch(content)
 	if len(match) > 1 {
@@ -100,7 +99,6 @@ func toUtf8(content string, contentType string) string {
 			htmlEncode2 = "utf-8"
 		}
 	}
-
 	reg = regexp.MustCompile(`(?is)<title[^>]*>(.*?)<\/title>`)
 	match = reg.FindStringSubmatch(content)
 	if len(match) > 1 {
@@ -115,18 +113,15 @@ func toUtf8(content string, contentType string) string {
 			htmlEncode3 = "utf-8"
 		}
 	}
-
 	if htmlEncode != "" && htmlEncode2 != "" && htmlEncode != htmlEncode2 {
 		htmlEncode = htmlEncode2
 	}
 	if htmlEncode == "utf-8" && htmlEncode != htmlEncode3 {
 		htmlEncode = htmlEncode3
 	}
-
 	if htmlEncode != "" && htmlEncode != "utf-8" {
 		content = Convert(content, htmlEncode, "utf-8")
 	}
-
 	return content
 }
 
@@ -241,7 +236,6 @@ func Checkbanner(target string, resp *http.Response, Finpx *Packjson, Task_id st
 	data := Resps{target, httpbody, resp.Header, server, resp.StatusCode, len(httpbody), title, jsurl, favhash}
 	headers := MapToJson(data.Header)
 	var cms []string
-
 	//协程并发匹配
 	pool := queue.New(100)
 	for _, finp := range Finpx.Fingerprint {
@@ -251,22 +245,10 @@ func Checkbanner(target string, resp *http.Response, Finpx *Packjson, Task_id st
 			lookforbanner(job)
 			pool.Done()
 		}(job)
-		//joblist = append(joblist, job)
 	}
 	pool.Wait()
 	cms = RemoveDuplicatesAndEmpty(cms)
 	cmss := strings.Join(cms, ",")
 	out := Outrestul{data.Url, cmss, data.Server, data.Statuscode, data.Length, data.Title, jsurl}
 	return out
-	//if len(out.Cms) != 0 {
-	//	outstr := fmt.Sprintf("[+] target: %s | banner: %s | Server: %s | Title: %s", out.Url, out.Cms, out.Server, out.Title)
-	//	color.RGBStyleFromString("237,64,35").Println(outstr)
-	//	//banner := sqlmoudle.Bannerresult{Task_Id: Task_id, Target: target, Banner: cmss, Server: data.Server, Status_Code: strconv.Itoa(data.Statuscode), Title: data.Title}
-	//	//sqlmoudle.Insertbanner(banner)
-	//	return out
-	//} else {
-	//	outstr := fmt.Sprintf("[ %s | %s | %s | %d | %d | %s ]", out.Url, out.Cms, out.Server, out.Statuscode, out.Length, out.Title)
-	//	fmt.Println(outstr)
-	//	return out
-	//}
 }

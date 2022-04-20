@@ -6,9 +6,11 @@ import (
 	"GOscan/module/queue"
 	"bufio"
 	"crypto/tls"
+	"encoding/json"
 	"fmt"
 	"github.com/gookit/color"
 	"io"
+	"io/ioutil"
 	"math/rand"
 	"net"
 	"net/http"
@@ -68,15 +70,40 @@ func request(target string, client *http.Client, resultnumber *int, Task_id stri
 	}
 }
 
+type configini struct {
+	Fingerpath string
+	Targetpath string
+}
+
+var (
+	configjson configini
+)
+
+func readconfig() {
+	path := "file/config.json"
+	data, err := ioutil.ReadFile(path)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	err = json.Unmarshal(data, &configjson)
+	if err != nil {
+		return
+	}
+	return
+}
+
 func main() {
+	start := time.Now()
+	logo := " ______  ______       ______  ______  ______  __   __\n/\\  ___\\/\\  __ \\     /\\  ___\\/\\  ___\\/\\  __ \\/\\ \"-.\\ \\\n\\ \\ \\__ \\ \\ \\/\\ \\    \\ \\___  \\ \\ \\___\\ \\  __ \\ \\ \\-.  \\\n \\ \\_____\\ \\_____\\    \\/\\_____\\ \\_____\\ \\_\\ \\_\\ \\_\\\\\"\\_\\\n  \\/_____/\\/_____/     \\/_____/\\/_____/\\/_/\\/_/\\/_/ \\/_/--Thinks Edge SecuirtyTeam\n"
+	color.RGBStyleFromString("255,162,133").Println(logo)
+	readconfig()
 	//指纹文件路径
-	fingerpath := "file/finger.json"
+	fingerpath := configjson.Fingerpath
 	//目标文件路径
-	targetpath := "file/test.txt"
+	targetpath := configjson.Targetpath
 	//可设置代理
 	proxy, _ := url.Parse("http://127.0.0.1:8080")
-
-	start := time.Now()
 	var resultnumber int //检测成功banner数量
 	var slice1 []string  //存取 从url文档中读到的URL
 
@@ -114,7 +141,6 @@ func main() {
 			break
 		}
 	}
-
 	//时间戳定义Task_id
 	Task_id := time.Now().Unix()
 	//定义协程池，设置最大数量
@@ -127,9 +153,7 @@ func main() {
 			pool.Done()
 		}(i)
 	}
-
 	pool.Wait()
-
 	fmt.Println("[+] success check banner&Send Paylaod ", resultnumber)
 	elapsed := time.Since(start)
 	fmt.Println("Take ", elapsed)

@@ -27,7 +27,6 @@ func LoadWebfingerprint(path string) error {
 		fmt.Println(err)
 		return err
 	}
-
 	var config Packjson
 	err = json.Unmarshal(data, &config)
 	if err != nil {

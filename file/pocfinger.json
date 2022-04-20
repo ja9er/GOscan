@@ -1,8 +1,0 @@
-{
-	"fingerprint": [
-		{
-			"cms": "IceWarp WebClient",
-			"POC": "IceWarp_WebClient_basic_command_injection"
-		}
-	]
-}
