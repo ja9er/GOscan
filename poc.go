@@ -139,7 +139,8 @@ func makeclient() *http.Client {
 }
 func main() {
 	var resultnumber int //检测成功banner数量
-	var slice1 []string  //存取 从url文档中读到的URL
+
+	var slice1 []string //存取 从url文档中读到的URL
 	start := time.Now()
 	logo := " ______  ______       ______  ______  ______  __   __\n/\\  ___\\/\\  __ \\     /\\  ___\\/\\  ___\\/\\  __ \\/\\ \"-.\\ \\\n\\ \\ \\__ \\ \\ \\/\\ \\    \\ \\___  \\ \\ \\___\\ \\  __ \\ \\ \\-.  \\\n \\ \\_____\\ \\_____\\    \\/\\_____\\ \\_____\\ \\_\\ \\_\\ \\_\\\\\"\\_\\\n  \\/_____/\\/_____/     \\/_____/\\/_____/\\/_/\\/_/\\/_/ \\/_/\n"
 	logo = logo + "(1)通过配置同级目录file/config.json文件来配置指纹，待扫描URL以及代理\n(2)学习项目，参考Ehole https://github.com/EdgeSecurityTeam/EHole/\n"
