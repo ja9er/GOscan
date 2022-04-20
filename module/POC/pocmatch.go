@@ -2,6 +2,7 @@ package POC
 
 import (
 	"github.com/gookit/color"
+	"net/http"
 	"strings"
 )
 
@@ -14,7 +15,7 @@ type Returnre struct {
 
 //定义一个攻击接口
 type attack interface {
-	Attack(targets string) Returnre
+	Attack(targets string, client *http.Client) Returnre
 }
 
 //在这里维护POC接口map，一一对应的关系
@@ -23,11 +24,11 @@ var PluginList map[string]attack = map[string]attack{
 }
 
 //攻击匹配
-func Attackmatch(target string, banner string) Returnre {
+func Attackmatch(target string, banner string, client *http.Client) Returnre {
 	var temp Returnre
 	for finp, POC := range PluginList {
 		if strings.Contains(finp, banner) {
-			temp = POC.Attack(target)
+			temp = POC.Attack(target, client)
 			if temp.Flag == true {
 				color.RGBStyleFromString("237,64,35").Println("[+] Send Payload to ", target, " | Banner: "+banner+"| match: True")
 				return temp

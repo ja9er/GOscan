@@ -1,4 +1,5 @@
 {
 	"Fingerpath": "file/finger.json",
-	"Targetpath": "file/test.txt"
+	"Targetpath": "file/test.txt",
+	"Httpproxy":"http://127.0.0.1:8080"
 }

@@ -50,7 +50,7 @@ func request(target string, client *http.Client, resultnumber *int, Task_id stri
 	req.Header.Add("Accept-Encoding", "gzip, deflate")
 	resp, err := client.Do(req)
 	if err != nil {
-		//fmt.Println("[-]: ", err)
+		fmt.Println("[-] ", err)
 		return
 	}
 	defer resp.Body.Close()
@@ -63,7 +63,7 @@ func request(target string, client *http.Client, resultnumber *int, Task_id stri
 	out := finger.Checkbanner(target, resp, Finpx, Task_id)
 	if out.Cms != "" {
 		*resultnumber = *resultnumber + 1
-		tem := POC.Attackmatch(target, out.Cms)
+		tem := POC.Attackmatch(target, out.Cms, client)
 		if tem.Flag == true {
 			(*finalresult) = append(*finalresult, tem)
 		}
@@ -76,6 +76,7 @@ func request(target string, client *http.Client, resultnumber *int, Task_id stri
 type configini struct {
 	Fingerpath string
 	Targetpath string
+	Httpproxy  string
 }
 
 var (
@@ -96,10 +97,52 @@ func readconfig() {
 	return
 }
 
+func makeclient() *http.Client {
+	if configjson.Httpproxy != "" {
+		proxy, _ := url.Parse(configjson.Httpproxy)
+		tr := &http.Transport{
+			//关闭证书验证
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+			//设置超时
+			Dial: (&net.Dialer{
+				Timeout:   5 * time.Second,
+				KeepAlive: 30 * time.Second,
+			}).Dial,
+			TLSHandshakeTimeout:   5 * time.Second,
+			ResponseHeaderTimeout: 5 * time.Second,
+			ExpectContinueTimeout: 5 * time.Second,
+			//设置代理
+			Proxy: http.ProxyURL(proxy),
+		}
+		client := &http.Client{
+			Transport: tr,
+		}
+		return client
+	} else {
+		tr := &http.Transport{
+			//关闭证书验证
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+			//设置超时
+			Dial: (&net.Dialer{
+				Timeout:   5 * time.Second,
+				KeepAlive: 30 * time.Second,
+			}).Dial,
+			TLSHandshakeTimeout:   5 * time.Second,
+			ResponseHeaderTimeout: 5 * time.Second,
+			ExpectContinueTimeout: 5 * time.Second,
+		}
+		client := &http.Client{
+			Transport: tr,
+		}
+		return client
+	}
+}
 func main() {
+	var resultnumber int //检测成功banner数量
+	var slice1 []string  //存取 从url文档中读到的URL
 	start := time.Now()
 	logo := " ______  ______       ______  ______  ______  __   __\n/\\  ___\\/\\  __ \\     /\\  ___\\/\\  ___\\/\\  __ \\/\\ \"-.\\ \\\n\\ \\ \\__ \\ \\ \\/\\ \\    \\ \\___  \\ \\ \\___\\ \\  __ \\ \\ \\-.  \\\n \\ \\_____\\ \\_____\\    \\/\\_____\\ \\_____\\ \\_\\ \\_\\ \\_\\\\\"\\_\\\n  \\/_____/\\/_____/     \\/_____/\\/_____/\\/_/\\/_/\\/_/ \\/_/\n"
-	logo = logo + "(1)通过配置同级目录file/config.json文件来配置指纹和待扫描URL\n(2)学习项目，参考Ehole https://github.com/EdgeSecurityTeam/EHole/\n"
+	logo = logo + "(1)通过配置同级目录file/config.json文件来配置指纹，待扫描URL以及代理\n(2)学习项目，参考Ehole https://github.com/EdgeSecurityTeam/EHole/\n"
 	color.RGBStyleFromString("255,162,133").Println(logo)
 	readconfig()
 	//指纹文件路径
@@ -107,27 +150,7 @@ func main() {
 	//目标文件路径
 	targetpath := configjson.Targetpath
 	//可设置代理
-	proxy, _ := url.Parse("http://127.0.0.1:8080")
-	var resultnumber int //检测成功banner数量
-	var slice1 []string  //存取 从url文档中读到的URL
-
-	tr := &http.Transport{
-		//关闭证书验证
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-		//设置超时
-		Dial: (&net.Dialer{
-			Timeout:   2 * time.Second,
-			KeepAlive: 30 * time.Second,
-		}).Dial,
-		TLSHandshakeTimeout:   5 * time.Second,
-		ResponseHeaderTimeout: 2 * time.Second,
-		ExpectContinueTimeout: 2 * time.Second,
-		//设置代理
-		Proxy: http.ProxyURL(proxy),
-	}
-	client := &http.Client{
-		Transport: tr,
-	}
+	client := makeclient()
 	inputFile, inputError := os.Open(targetpath)
 	if inputError != nil {
 		fmt.Printf("读取targetpath文件时出现错误 %s", inputError)
