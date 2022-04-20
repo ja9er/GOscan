@@ -5,9 +5,16 @@ import (
 	"strings"
 )
 
+type Returnre struct {
+	Flag    bool
+	Target  string
+	Bannner string
+	Pocname string
+}
+
 //定义一个攻击接口
 type attack interface {
-	Attack(targets string) bool
+	Attack(targets string) Returnre
 }
 
 //在这里维护POC接口map，一一对应的关系
@@ -16,15 +23,23 @@ var PluginList map[string]attack = map[string]attack{
 }
 
 //攻击匹配
-func Attackmatch(target string, banner string) {
+func Attackmatch(target string, banner string) Returnre {
+	var temp Returnre
 	for finp, POC := range PluginList {
 		if strings.Contains(finp, banner) {
-			flag := POC.Attack(target)
-			if flag == true {
-				color.RGBStyleFromString("237,64,35").Println("[+] Send Payload to ", target, " | Banner: "+banner+" | match: True")
+			temp = POC.Attack(target)
+			if temp.Flag == true {
+				color.RGBStyleFromString("237,64,35").Println("[+] Send Payload to ", target, " | Banner: "+banner+"| match: True")
+				return temp
 			} else {
 				color.RGBStyleFromString("195,195,195").Println("[+] Send Payload to ", target, " | Banner: "+banner+" | match: False")
+				return temp
 			}
 		}
 	}
+	color.RGBStyleFromString("195,195,195").Println("[+] Send Payload to ", target, " | Banner: "+banner+" | match: don't have poc")
+	temp.Bannner = banner
+	temp.Pocname = ""
+	temp.Flag = false
+	return temp
 }

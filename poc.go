@@ -41,7 +41,7 @@ func rndua() string {
 	return ua[n]
 }
 
-func request(target string, client *http.Client, resultnumber *int, Task_id string, path string) {
+func request(target string, client *http.Client, resultnumber *int, Task_id string, path string, finalresult *[]POC.Returnre) {
 	req, err := http.NewRequest("GET", target, nil)
 	req.Header.Add("Cache-Control", "max-age=0")
 	req.Header.Add("Upgrade-Insecure-Requests", "1")
@@ -63,10 +63,13 @@ func request(target string, client *http.Client, resultnumber *int, Task_id stri
 	out := finger.Checkbanner(target, resp, Finpx, Task_id)
 	if out.Cms != "" {
 		*resultnumber = *resultnumber + 1
-		POC.Attackmatch(target, out.Cms)
+		tem := POC.Attackmatch(target, out.Cms)
+		if tem.Flag == true {
+			(*finalresult) = append(*finalresult, tem)
+		}
 	}
 	if len(out.Jsurl) > 0 {
-		request(out.Jsurl[0], client, resultnumber, Task_id, path)
+		request(out.Jsurl[0], client, resultnumber, Task_id, path, finalresult)
 	}
 }
 
@@ -95,7 +98,8 @@ func readconfig() {
 
 func main() {
 	start := time.Now()
-	logo := " ______  ______       ______  ______  ______  __   __\n/\\  ___\\/\\  __ \\     /\\  ___\\/\\  ___\\/\\  __ \\/\\ \"-.\\ \\\n\\ \\ \\__ \\ \\ \\/\\ \\    \\ \\___  \\ \\ \\___\\ \\  __ \\ \\ \\-.  \\\n \\ \\_____\\ \\_____\\    \\/\\_____\\ \\_____\\ \\_\\ \\_\\ \\_\\\\\"\\_\\\n  \\/_____/\\/_____/     \\/_____/\\/_____/\\/_/\\/_/\\/_/ \\/_/--Thinks Edge SecuirtyTeam\n"
+	logo := " ______  ______       ______  ______  ______  __   __\n/\\  ___\\/\\  __ \\     /\\  ___\\/\\  ___\\/\\  __ \\/\\ \"-.\\ \\\n\\ \\ \\__ \\ \\ \\/\\ \\    \\ \\___  \\ \\ \\___\\ \\  __ \\ \\ \\-.  \\\n \\ \\_____\\ \\_____\\    \\/\\_____\\ \\_____\\ \\_\\ \\_\\ \\_\\\\\"\\_\\\n  \\/_____/\\/_____/     \\/_____/\\/_____/\\/_/\\/_/\\/_/ \\/_/\n"
+	logo = logo + "(1)通过配置同级目录file/config.json文件来配置指纹和待扫描URL\n(2)学习项目，参考Ehole https://github.com/EdgeSecurityTeam/EHole/\n"
 	color.RGBStyleFromString("255,162,133").Println(logo)
 	readconfig()
 	//指纹文件路径
@@ -126,9 +130,7 @@ func main() {
 	}
 	inputFile, inputError := os.Open(targetpath)
 	if inputError != nil {
-		fmt.Printf("An error occurred on opening the inputfile\n" +
-			"Does the file exist?\n" +
-			"Have you got acces to it?\n")
+		fmt.Printf("读取targetpath文件时出现错误 %s", inputError)
 		return
 	}
 	defer inputFile.Close()
@@ -141,20 +143,26 @@ func main() {
 			break
 		}
 	}
+	fmt.Println("读取targetpath成功，正在扫描中......")
 	//时间戳定义Task_id
 	Task_id := time.Now().Unix()
 	//定义协程池，设置最大数量
+	var result []POC.Returnre
 	pool := queue.New(100)
 	for i := 0; i < len(slice1); i++ {
 		pool.Add(1)
 		go func(i int) {
 			//要修改函数外的变量需要引用传递
-			request(slice1[i], client, &resultnumber, strconv.FormatInt(Task_id, 10), fingerpath)
+			request(slice1[i], client, &resultnumber, strconv.FormatInt(Task_id, 10), fingerpath, &result)
 			pool.Done()
 		}(i)
 	}
 	pool.Wait()
-	fmt.Println("[+] success check banner&Send Paylaod ", resultnumber)
+	fmt.Println("[+] success check banner&Send Paylaod:", resultnumber)
+	fmt.Println("\n[+]攻击成功:")
+	for i := 0; i < len(result); i++ {
+		color.RGBStyleFromString("237,64,35").Printf("[+] Target: %s | Banner: %s | matchpoc: %s | match: %t\n", result[i].Target, result[i].Bannner, result[i].Pocname, result[i].Flag)
+	}
 	elapsed := time.Since(start)
-	fmt.Println("Take ", elapsed)
+	fmt.Println("[+]Take  ", elapsed)
 }

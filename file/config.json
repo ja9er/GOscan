@@ -1,4 +1,4 @@
 {
-	"fingerjson": "file/finger.json",
-	"target": "file/test.txt"
+	"Fingerpath": "file/finger.json",
+	"Targetpath": "file/test.txt"
 }
