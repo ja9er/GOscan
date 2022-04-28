@@ -1,5 +1,6 @@
 {
 	"Fingerpath": "file/finger.json",
 	"Targetpath": "file/test.txt",
+	"Poolnumber": 100,
 	"Httpproxy":"http://127.0.0.1:8080"
 }

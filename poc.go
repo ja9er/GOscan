@@ -77,6 +77,7 @@ type configini struct {
 	Fingerpath string
 	Targetpath string
 	Httpproxy  string
+	Poolnumber int
 }
 
 var (
@@ -87,7 +88,6 @@ func readconfig() {
 	path := "file/config.json"
 	data, err := ioutil.ReadFile(path)
 	if err != nil {
-		fmt.Println(err)
 		return
 	}
 	err = json.Unmarshal(data, &configjson)
@@ -138,12 +138,12 @@ func makeclient() *http.Client {
 	}
 }
 func main() {
+	// GoPlugins GO插件集
 	var resultnumber int //检测成功banner数量
-
-	var slice1 []string //存取 从url文档中读到的URL
+	var slice1 []string  //存取 从url文档中读到的URL
 	start := time.Now()
 	logo := " ______  ______       ______  ______  ______  __   __\n/\\  ___\\/\\  __ \\     /\\  ___\\/\\  ___\\/\\  __ \\/\\ \"-.\\ \\\n\\ \\ \\__ \\ \\ \\/\\ \\    \\ \\___  \\ \\ \\___\\ \\  __ \\ \\ \\-.  \\\n \\ \\_____\\ \\_____\\    \\/\\_____\\ \\_____\\ \\_\\ \\_\\ \\_\\\\\"\\_\\\n  \\/_____/\\/_____/     \\/_____/\\/_____/\\/_/\\/_/\\/_/ \\/_/\n"
-	logo = logo + "(1)通过配置同级目录file/config.json文件来配置指纹，待扫描URL以及代理\n(2)学习项目，参考Ehole https://github.com/EdgeSecurityTeam/EHole/\n"
+	logo = logo + "(1)通过配置同级目录file/config.json文件来配置指纹，待扫描URL以及代理\n(2)学习项目，参考https://github.com/EdgeSecurityTeam/EHole/\n"
 	color.RGBStyleFromString("255,162,133").Println(logo)
 	readconfig()
 	//指纹文件路径
@@ -172,7 +172,7 @@ func main() {
 	Task_id := time.Now().Unix()
 	//定义协程池，设置最大数量
 	var result []POC.Returnre
-	pool := queue.New(100)
+	pool := queue.New(configjson.Poolnumber)
 	for i := 0; i < len(slice1); i++ {
 		pool.Add(1)
 		go func(i int) {

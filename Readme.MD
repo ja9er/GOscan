@@ -1,6 +1,7 @@
 # Goscan
+[~]#棱角 ::Edge.Forum 首发
 
-学习GO的成果
+>ps:学习GO的成果，很菜勿喷
 
 **Todo:**
 
