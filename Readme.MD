@@ -1,4 +1,4 @@
-# Goscan
+# Ehole-魔改版
 [~]#棱角 ::Edge.Forum 首发
 
 >ps:学习GO的成果，很菜勿喷
